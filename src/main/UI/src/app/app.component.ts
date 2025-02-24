@@ -15,6 +15,7 @@ import {map} from "rxjs/operators";
 })
 export class AppComponent implements OnInit{
 
+  // variables for the welcome message to display
   englishWelcomeMessage$!: Observable<string>;
   frenchWelcomeMessage$!: Observable<string>;
 
@@ -33,7 +34,7 @@ export class AppComponent implements OnInit{
 
     ngOnInit(){
 
-      //
+      // localized welcome messages in English and French
       this.englishWelcomeMessage$ = this.httpClient.get(this.baseURL + '/welcome?lang=en-US', { responseType: 'text'});
       this.frenchWelcomeMessage$ = this.httpClient.get(this.baseURL + '/welcome?lang=fr-CA', { responseType: 'text'});
 
@@ -56,13 +57,15 @@ export class AppComponent implements OnInit{
     });
   }
 
-    onSubmit({value,valid}:{value:Roomsearch,valid:boolean}){
-      this.getAll().subscribe(
-
-        rooms => {console.log(Object.values(rooms)[0]);this.rooms=<Room[]>Object.values(rooms)[0]; }
-
-
-      );
+    // calculate price conversion based on current values, and set variables
+    onSubmit({ value,valid }:{value:Roomsearch,valid:boolean}){
+      this.getAll().subscribe((rooms: unknown) => {
+          this.rooms = Object.values(rooms as Record<string, Room[]>)[0];
+          this.rooms.forEach((room) => {
+            room.priceCA = (Number(room.price) * 1.42).toFixed(2);
+            room.priceEUR = (Number(room.price) * 0.95).toFixed(2);
+          });
+        });
     }
     reserveRoom(value:string){
       this.request = new ReserveRoomRequest(value, this.currentCheckInVal, this.currentCheckOutVal);
@@ -109,6 +112,8 @@ export interface Room{
   id:string;
   roomNumber:string;
   price:string;
+  priceCA:string;
+  priceEUR:string;
   links:string;
 
 }
